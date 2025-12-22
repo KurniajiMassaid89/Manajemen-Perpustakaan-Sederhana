@@ -1,7 +1,7 @@
 package gui;
 
-import backend.Book;
-import controller.BookController;
+import backend.*;
+import controller.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -9,116 +9,145 @@ import java.awt.*;
 
 public class LibraryGUI extends JFrame {
 
-    private JTextField txtKode, txtJudul, txtStok, txtCari;
+    private JTextField txtKode, txtJudul, txtPenulis, txtStok, txtCari;
     private JTable table;
     private DefaultTableModel model;
     private BookController controller = new BookController();
 
     public LibraryGUI() {
-        setTitle("Aplikasi Perpustakaan");
-        setSize(650, 400);
+        setTitle("Perpustakaan");
+        setSize(900, 500);
+        setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        JPanel form = new JPanel(new GridLayout(4, 2, 5, 5));
+        Font font = new Font("Segoe UI", Font.PLAIN, 14);
+
+        // ===== JUDUL =====
+        JLabel title = new JLabel("Perpustakaan", JLabel.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        title.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
+        add(title, BorderLayout.NORTH);
+
+        // ===== FORM =====
+        JPanel form = new JPanel(new GridLayout(9, 1, 5, 5));
+        form.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
         txtKode = new JTextField();
         txtJudul = new JTextField();
+        txtPenulis = new JTextField();
         txtStok = new JTextField();
 
         form.add(new JLabel("Kode Buku"));
         form.add(txtKode);
         form.add(new JLabel("Judul Buku"));
         form.add(txtJudul);
+        form.add(new JLabel("Penulis"));
+        form.add(txtPenulis);
         form.add(new JLabel("Stok"));
         form.add(txtStok);
 
         JButton btnTambah = new JButton("Tambah");
-        form.add(new JLabel(""));
         form.add(btnTambah);
 
-        add(form, BorderLayout.NORTH);
-
-        model = new DefaultTableModel(new String[]{"Kode", "Judul", "Stok"}, 0);
+        // ===== TABLE =====
+        model = new DefaultTableModel(new String[]{"Kode", "Judul", "Penulis", "Stok"}, 0);
         table = new JTable(model);
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        table.setFont(font);
+        table.setRowHeight(22);
 
-        JPanel panelBtn = new JPanel();
+        JScrollPane scroll = new JScrollPane(table);
+
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, form, scroll);
+        split.setDividerLocation(300);
+        add(split, BorderLayout.CENTER);
+
+        // ===== BOTTOM =====
+        JPanel bottom = new JPanel();
 
         JButton btnHapus = new JButton("Hapus");
         JButton btnPinjam = new JButton("Pinjam");
         JButton btnKembali = new JButton("Kembalikan");
 
-        txtCari = new JTextField(10);
+        txtCari = new JTextField(15);
         JButton btnCari = new JButton("Cari");
 
-        panelBtn.add(btnHapus);
-        panelBtn.add(btnPinjam);
-        panelBtn.add(btnKembali);
-        panelBtn.add(txtCari);
-        panelBtn.add(btnCari);
+        bottom.add(btnHapus);
+        bottom.add(btnPinjam);
+        bottom.add(btnKembali);
+        bottom.add(txtCari);
+        bottom.add(btnCari);
 
-        add(panelBtn, BorderLayout.SOUTH);
+        add(bottom, BorderLayout.SOUTH);
 
-        btnTambah.addActionListener(e -> tambahBuku());
-        btnHapus.addActionListener(e -> hapusBuku());
-        btnPinjam.addActionListener(e -> pinjamBuku());
-        btnKembali.addActionListener(e -> kembalikanBuku());
-        btnCari.addActionListener(e -> cariBuku());
+        // ===== EVENT =====
+        btnTambah.addActionListener(e -> tambah());
+        btnHapus.addActionListener(e -> hapus());
+        btnPinjam.addActionListener(e -> pinjam());
+        btnKembali.addActionListener(e -> kembali());
+        btnCari.addActionListener(e -> cari());
     }
 
-    private void tambahBuku() {
-        controller.tambahBuku(
-                txtKode.getText(),
-                txtJudul.getText(),
-                Integer.parseInt(txtStok.getText())
+    private void tambah() {
+        Book b = new Book(
+            txtKode.getText(),
+            txtJudul.getText(),
+            txtPenulis.getText(),
+            Integer.parseInt(txtStok.getText())
         );
-        refreshTable();
+        controller.getRepo().tambah(b);
+        refresh();
     }
 
-    private void hapusBuku() {
+    private void hapus() {
         int row = table.getSelectedRow();
         if (row >= 0) {
-            controller.hapusBuku(row);
-            refreshTable();
+            controller.getRepo().hapus(row);
+            refresh();
         }
     }
 
-    private void pinjamBuku() {
+    private void pinjam() {
         int row = table.getSelectedRow();
         if (row >= 0) {
             try {
-                controller.pinjamBuku(row);
-                refreshTable();
+                controller.pinjamBuku(controller.getRepo().getAll().get(row));
+                refresh();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, e.getMessage());
             }
         }
     }
 
-    private void kembalikanBuku() {
+    private void kembali() {
         int row = table.getSelectedRow();
         if (row >= 0) {
-            controller.kembalikanBuku(row);
-            refreshTable();
+            controller.kembalikanBuku(controller.getRepo().getAll().get(row));
+            refresh();
         }
     }
 
-    private void cariBuku() {
-        Book b = controller.cariBuku(txtCari.getText());
+    private void cari() {
+        Book b = controller.getRepo().cari(txtCari.getText());
         if (b != null) {
-            JOptionPane.showMessageDialog(this, "Buku ditemukan: " + b.getJudul());
+            JOptionPane.showMessageDialog(this,
+                "Judul: " + b.getJudul() +
+                "\nPenulis: " + b.getPenulis() +
+                "\nStok: " + b.getStok()
+            );
         } else {
             JOptionPane.showMessageDialog(this, "Buku tidak ditemukan");
         }
     }
 
-    private void refreshTable() {
+    private void refresh() {
         model.setRowCount(0);
-        for (Book b : controller.getAllBuku()) {
+        for (Book b : controller.getRepo().getAll()) {
             model.addRow(new Object[]{
-                    b.getKode(),
-                    b.getJudul(),
-                    b.getStok()
+                b.getKode(),
+                b.getJudul(),
+                b.getPenulis(),
+                b.getStok()
             });
         }
     }
