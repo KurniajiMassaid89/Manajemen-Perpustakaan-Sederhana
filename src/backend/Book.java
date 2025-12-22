@@ -3,11 +3,13 @@ package backend;
 public class Book {
     private String kode;
     private String judul;
+    private String penulis;
     private int stok;
 
-    public Book(String kode, String judul, int stok) {
+    public Book(String kode, String judul, String penulis, int stok) {
         this.kode = kode;
         this.judul = judul;
+        this.penulis = penulis;
         this.stok = stok;
     }
 
@@ -17,6 +19,10 @@ public class Book {
 
     public String getJudul() {
         return judul;
+    }
+
+    public String getPenulis() {
+        return penulis;
     }
 
     public int getStok() {
