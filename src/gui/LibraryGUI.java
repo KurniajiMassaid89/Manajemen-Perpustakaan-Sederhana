@@ -1,7 +1,7 @@
 package gui;
 
-import backend.*;
-import controller.*;
+import backend.Book;
+import controller.BookController;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -20,7 +20,6 @@ public class LibraryGUI extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // === FORM INPUT ===
         JPanel form = new JPanel(new GridLayout(4, 2, 5, 5));
         txtKode = new JTextField();
         txtJudul = new JTextField();
@@ -39,12 +38,10 @@ public class LibraryGUI extends JFrame {
 
         add(form, BorderLayout.NORTH);
 
-        // === TABLE ===
         model = new DefaultTableModel(new String[]{"Kode", "Judul", "Stok"}, 0);
         table = new JTable(model);
         add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // === BUTTON PANEL ===
         JPanel panelBtn = new JPanel();
 
         JButton btnHapus = new JButton("Hapus");
@@ -62,7 +59,6 @@ public class LibraryGUI extends JFrame {
 
         add(panelBtn, BorderLayout.SOUTH);
 
-        // === EVENT HANDLING ===
         btnTambah.addActionListener(e -> tambahBuku());
         btnHapus.addActionListener(e -> hapusBuku());
         btnPinjam.addActionListener(e -> pinjamBuku());
@@ -71,19 +67,18 @@ public class LibraryGUI extends JFrame {
     }
 
     private void tambahBuku() {
-        Book b = new Book(
+        controller.tambahBuku(
                 txtKode.getText(),
                 txtJudul.getText(),
                 Integer.parseInt(txtStok.getText())
         );
-        controller.getRepo().tambah(b);
         refreshTable();
     }
 
     private void hapusBuku() {
         int row = table.getSelectedRow();
         if (row >= 0) {
-            controller.getRepo().hapus(row);
+            controller.hapusBuku(row);
             refreshTable();
         }
     }
@@ -92,8 +87,7 @@ public class LibraryGUI extends JFrame {
         int row = table.getSelectedRow();
         if (row >= 0) {
             try {
-                Book b = controller.getRepo().getAll().get(row);
-                controller.pinjamBuku(b);
+                controller.pinjamBuku(row);
                 refreshTable();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, e.getMessage());
@@ -104,14 +98,13 @@ public class LibraryGUI extends JFrame {
     private void kembalikanBuku() {
         int row = table.getSelectedRow();
         if (row >= 0) {
-            Book b = controller.getRepo().getAll().get(row);
-            controller.kembalikanBuku(b);
+            controller.kembalikanBuku(row);
             refreshTable();
         }
     }
 
     private void cariBuku() {
-        Book b = controller.getRepo().cari(txtCari.getText());
+        Book b = controller.cariBuku(txtCari.getText());
         if (b != null) {
             JOptionPane.showMessageDialog(this, "Buku ditemukan: " + b.getJudul());
         } else {
@@ -121,7 +114,7 @@ public class LibraryGUI extends JFrame {
 
     private void refreshTable() {
         model.setRowCount(0);
-        for (Book b : controller.getRepo().getAll()) {
+        for (Book b : controller.getAllBuku()) {
             model.addRow(new Object[]{
                     b.getKode(),
                     b.getJudul(),
