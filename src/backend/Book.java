@@ -1,42 +1,36 @@
 package backend;
 
 public class Book {
-    private String kode;
-    private String judul;
-    private String penulis;
-    private int stok;
+    private String code;
+    private String title;
+    private String author;
+    private int stock;
 
-    public Book(String kode, String judul, String penulis, int stok) {
-        this.kode = kode;
-        this.judul = judul;
-        this.penulis = penulis;
-        this.stok = stok;
+    public Book(String code, String title, String author, int stock) {
+        this.code = code;
+        this.title = title;
+        this.author = author;
+        this.stock = stock;
     }
 
-    public String getKode() {
-        return kode;
+    // Getter
+    public String getCode() { return code; }
+    public String getTitle() { return title; }
+    public String getAuthor() { return author; }
+    public int getStock() { return stock; }
+
+    // Setter stok
+    public void setStock(int stock) {
+        this.stock = stock;
     }
 
-    public String getJudul() {
-        return judul;
+    // Status tersedia otomatis tergantung stok
+    public boolean isAvailable() {
+        return stock > 0;
     }
 
-    public String getPenulis() {
-        return penulis;
-    }
-
-    public int getStok() {
-        return stok;
-    }
-
-    public void pinjam() throws Exception {
-        if (stok <= 0) {
-            throw new Exception("Stok buku kosong!");
-        }
-        stok--;
-    }
-
-    public void kembalikan() {
-        stok++;
+    // Status dalam bentuk teks (Tersedia / Tidak Tersedia)
+    public String getStatusText() {
+        return isAvailable() ? "Tersedia" : "Tidak Tersedia";
     }
 }
